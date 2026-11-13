@@ -12,23 +12,8 @@ void gerarNumeroConta(Conta *conta, int numero, int tipo) {
 }
 
 void criarContas(Cliente *cliente, int numeroCliente) {
-    int opcao;
 
-    printf("\nEscolha o tipo de conta:\n");
-    printf("1 - Corrente + Poupanca\n");
-    printf("2 - Salario + Poupanca\n");
-    printf("3 - Somente Salario\n");
-    printf("4 - Somente Corrente\n");
-    printf("5 - Somente Poupanca\n");
-    printf("Opcao: ");
-    scanf("%d", &opcao);
-
-    while (opcao < 1 || opcao > 5) {
-        printf("Opcao invalida! Escolha novamente: ");
-        scanf("%d", &opcao);
-    }
-
-    cliente->quantidadeContas = 0;
+    int opcao = (rand() % 5) + 1;
 
     switch (opcao) {
         case 1:
@@ -60,42 +45,70 @@ void criarContas(Cliente *cliente, int numeroCliente) {
     }
 
     for (int i = 0; i < cliente->quantidadeContas; i++) {
-        gerarNumeroConta(&cliente->contas[i], numeroCliente,
-                         cliente->contas[i].tipo);
+
+        gerarNumeroConta(
+            &cliente->contas[i],
+            numeroCliente,
+            cliente->contas[i].tipo
+        );
 
         cliente->contas[i].saldo = (rand() % 490001) + 10000;
+
         cliente->contas[i].quantidadeTransacoes = 0;
     }
 }
 
 void cadastrarClientes(Cliente clientes[], int quantidade) {
+
     for (int i = 0; i < quantidade; i++) {
-        printf("\n== CLIENTE %d ==\n", i + 1);
 
         clientes[i].codigo = i + 1;
 
-        printf("Nome do cliente: ");
-        scanf(" %49[^\n]", clientes[i].nome);
+        snprintf(clientes[i].nome, sizeof(clientes[i].nome),
+                 "Cliente %d", i + 1);
 
         criarContas(&clientes[i], i + 1);
 
         clientes[i].possuiEmprestimo = 0;
 
-        printf("\nCliente cadastrado com sucesso!\n");
+        printf("\n== CLIENTE %d ==\n", i + 1);
+        printf("Nome: %s\n", clientes[i].nome);
 
         for (int j = 0; j < clientes[i].quantidadeContas; j++) {
+
             Conta *conta = &clientes[i].contas[j];
 
-            printf("Conta: %s | Saldo: R$ %ld,%02ld\n",
-                   conta->numeroConta,
+            printf("Conta: %s | ", conta->numeroConta);
+
+            printf("Tipo: ");
+
+            switch (conta->tipo) {
+                case CORRENTE:
+                    printf("Corrente");
+                    break;
+
+                case SALARIO:
+                    printf("Salario");
+                    break;
+
+                case POUPANCA:
+                    printf("Poupanca");
+                    break;
+            }
+
+            printf(" | Saldo: R$ %ld,%02ld\n",
                    conta->saldo / 100,
                    conta->saldo % 100);
         }
     }
+
+    printf("\nCadastro automatico concluido!\n");
 }
 
 void registrarTransacao(Conta *conta, long valor, int tipo) {
+
     if (conta->quantidadeTransacoes == MAX_TRANSACOES) {
+
         for (int i = 0; i < MAX_TRANSACOES - 1; i++) {
             conta->extrato[i] = conta->extrato[i + 1];
         }
@@ -112,18 +125,21 @@ void registrarTransacao(Conta *conta, long valor, int tipo) {
 }
 
 void depositar(Conta *conta, long valor) {
+
     if (valor <= 0) {
         printf("Valor de deposito invalido!\n");
         return;
     }
 
     conta->saldo += valor;
+
     registrarTransacao(conta, valor, DEPOSITO);
 
     printf("Deposito realizado com sucesso!\n");
 }
 
 void sacar(Conta *conta, long valor) {
+
     if (valor <= 0) {
         printf("Valor de saque invalido!\n");
         return;
@@ -135,15 +151,18 @@ void sacar(Conta *conta, long valor) {
     }
 
     conta->saldo -= valor;
+
     registrarTransacao(conta, valor, SAQUE);
 
     printf("Saque realizado com sucesso!\n");
 }
 
 long calcularSaldoTotal(Cliente clientes[], int quantidade) {
+
     long saldoTotal = 0;
 
     for (int i = 0; i < quantidade; i++) {
+
         for (int j = 0; j < clientes[i].quantidadeContas; j++) {
             saldoTotal += clientes[i].contas[j].saldo;
         }
@@ -153,11 +172,13 @@ long calcularSaldoTotal(Cliente clientes[], int quantidade) {
 }
 
 int clienteAptoEmprestimo(Cliente cliente) {
+
     int temCorrente = 0;
     int temPoupanca = 0;
     long saldoPoupanca = 0;
 
     for (int i = 0; i < cliente.quantidadeContas; i++) {
+
         if (cliente.contas[i].tipo == CORRENTE) {
             temCorrente = 1;
         }
@@ -168,11 +189,14 @@ int clienteAptoEmprestimo(Cliente cliente) {
         }
     }
 
-    return temCorrente && temPoupanca &&
-           saldoPoupanca > 0 && !cliente.possuiEmprestimo;
+    return temCorrente &&
+           temPoupanca &&
+           saldoPoupanca > 0 &&
+           !cliente.possuiEmprestimo;
 }
 
 long calcularLimite(Cliente cliente) {
+
     long saldoTotal = 0;
 
     for (int i = 0; i < cliente.quantidadeContas; i++) {
@@ -183,26 +207,35 @@ long calcularLimite(Cliente cliente) {
 }
 
 void exibirSaldoTotal(Cliente clientes[], int quantidade) {
+
     long total = calcularSaldoTotal(clientes, quantidade);
 
     printf("\n== SALDO TOTAL DO BANCO ==\n");
 
     if (total < 0) {
+
         printf("Saldo total do banco: -R$ %ld,%02ld\n",
-               -total / 100, -total % 100);
+               -total / 100,
+               -total % 100);
+
     } else {
+
         printf("Saldo total do banco: R$ %ld,%02ld\n",
-               total / 100, total % 100);
+               total / 100,
+               total % 100);
     }
 }
 
 void exibirClientesAptos(Cliente clientes[], int quantidade) {
+
     int encontrou = 0;
 
     printf("\n== CLIENTES APTOS A EMPRESTIMO ==\n");
 
     for (int i = 0; i < quantidade; i++) {
+
         if (clienteAptoEmprestimo(clientes[i])) {
+
             long limite = calcularLimite(clientes[i]);
 
             if (limite <= 0) {
@@ -214,15 +247,19 @@ void exibirClientesAptos(Cliente clientes[], int quantidade) {
             printf("\nCliente: %s\n", clientes[i].nome);
 
             for (int j = 0; j < clientes[i].quantidadeContas; j++) {
+
                 if (clientes[i].contas[j].tipo == CORRENTE) {
+
                     printf("Numero da conta: %s\n",
                            clientes[i].contas[j].numeroConta);
+
                     break;
                 }
             }
 
             printf("Valor maximo: R$ %ld,%02ld\n",
-                   limite / 100, limite % 100);
+                   limite / 100,
+                   limite % 100);
         }
     }
 
@@ -232,19 +269,24 @@ void exibirClientesAptos(Cliente clientes[], int quantidade) {
 }
 
 void exibirClientesNegativos(Cliente clientes[], int quantidade) {
+
     int encontrou = 0;
 
     printf("\n== CLIENTES NEGATIVOS ==\n");
 
     for (int i = 0; i < quantidade; i++) {
+
         for (int j = 0; j < clientes[i].quantidadeContas; j++) {
+
             Conta *conta = &clientes[i].contas[j];
 
             if (conta->tipo == CORRENTE && conta->saldo < 0) {
+
                 encontrou = 1;
 
                 printf("\nCliente: %s\n", clientes[i].nome);
                 printf("Numero da conta: %s\n", conta->numeroConta);
+
                 printf("Saldo negativo: -R$ %ld,%02ld\n",
                        -conta->saldo / 100,
                        -conta->saldo % 100);
@@ -258,12 +300,15 @@ void exibirClientesNegativos(Cliente clientes[], int quantidade) {
 }
 
 void exibirClientesTitulos(Cliente clientes[], int quantidade) {
+
     int encontrou = 0;
 
-    printf("\n==CLIENTES TITULOS ==\n");
+    printf("\n== CLIENTES TITULOS ==\n");
 
     for (int i = 0; i < quantidade; i++) {
+
         for (int j = 0; j < clientes[i].quantidadeContas; j++) {
+
             Conta *conta = &clientes[i].contas[j];
 
             if (conta->tipo == SALARIO &&
@@ -274,6 +319,7 @@ void exibirClientesTitulos(Cliente clientes[], int quantidade) {
 
                 printf("\nCliente: %s\n", clientes[i].nome);
                 printf("Numero da conta: %s\n", conta->numeroConta);
+
                 printf("Saldo: R$ %ld,%02ld\n",
                        conta->saldo / 100,
                        conta->saldo % 100);
@@ -287,8 +333,12 @@ void exibirClientesTitulos(Cliente clientes[], int quantidade) {
 }
 
 void exibirRelatorios(Cliente clientes[], int quantidade) {
+
     exibirSaldoTotal(clientes, quantidade);
+
     exibirClientesAptos(clientes, quantidade);
+
     exibirClientesNegativos(clientes, quantidade);
+
     exibirClientesTitulos(clientes, quantidade);
 }
