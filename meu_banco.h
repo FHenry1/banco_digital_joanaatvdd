@@ -15,7 +15,7 @@
 typedef struct {
     long valor;
     int tipoTransacao;
-} Transacao;
+} Transacao;a
 
 typedef struct {
     int numero;
