@@ -174,7 +174,7 @@ int main() {
 
                                 case '3':
 
-                                    solicitarEmprestimo(clienteEncontrado);
+                                    solicitarEmprestimo(clienteEncontrado, contaEncontrada);
 
                                     break;
 
