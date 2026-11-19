@@ -3,6 +3,7 @@
 
 #define MAX_CONTAS 2
 #define MAX_TRANSACOES 5
+#define TAM_NUMERO_CONTA 16
 
 #define NUMERO_INICIAL 1000
 
@@ -26,7 +27,7 @@ typedef struct {
     int numero;
     int tipo;
     long saldo;
-    char numeroConta[16];
+    char numeroConta[TAM_NUMERO_CONTA];
 
     Transacao extrato[MAX_TRANSACOES];
     int quantidadeTransacoes;
@@ -34,7 +35,7 @@ typedef struct {
 
 typedef struct {
     int codigo;
-    char nome[50];
+    char nome[100];
 
     Conta contas[MAX_CONTAS];
     int quantidadeContas;
@@ -47,31 +48,42 @@ typedef struct {
 void cadastrarClientes(Cliente clientes[], int quantidade);
 void criarContas(Cliente *cliente, int numeroCliente);
 void gerarNumeroConta(Conta *conta, int numero, int tipo);
-Conta *buscarConta(Cliente clientes[], int quantidade, const char *numeroConta, Cliente **dono);
 
+int buscarConta(
+    Cliente clientes[],
+    int quantidade,
+    char numeroConta[],
+    Cliente **clienteEncontrado,
+    Conta **contaEncontrada
+);
+
+void registrarTransacao(Conta *conta, long valor, int tipo);
 void depositar(Conta *conta, long valor);
 void sacar(Conta *conta, long valor);
-void registrarTransacao(Conta *conta, long valor, int tipo);
 void exibirExtrato(Conta *conta);
+void alertarSaldoNegativo(Cliente *cliente);
 
-long calcularSaldoTotal(Cliente clientes[], int quantidade);
 int clienteAptoEmprestimo(Cliente cliente);
 long calcularLimite(Cliente cliente);
-void solicitarEmprestimo(Cliente *cliente, Conta *conta);
-void adquirirTitulo(Cliente *cliente, Conta *conta);
+void solicitarEmprestimo(Cliente *cliente);
+void comprarTitulo(Cliente *cliente);
 
-void realizarSorteio(Cliente clientes[], int quantidade);
-
-void menuCliente(Cliente *cliente, Conta *conta);
-
+long calcularSaldoTotal(Cliente clientes[], int quantidade);
 void exibirSaldoTotal(Cliente clientes[], int quantidade);
 void exibirClientesAptos(Cliente clientes[], int quantidade);
 void exibirClientesNegativos(Cliente clientes[], int quantidade);
 void exibirClientesTitulos(Cliente clientes[], int quantidade);
-void exibirClientesContemplados(Cliente clientes[], int quantidade);
+void exibirClientesContemplados(
+    Cliente *cliente,
+    Conta *conta,
+    long premio
+);
 void exibirRelatorios(Cliente clientes[], int quantidade);
 
-int salvarBanco(Cliente clientes[], int quantidade);
-int carregarBanco(Cliente **clientes, int *quantidade);
+int sorteioFibonacci(int quantidade);
+void realizarSorteio(Cliente clientes[], int quantidade);
+
+void salvarDados(Cliente clientes[], int quantidade);
+int carregarDados(Cliente **clientes, int *quantidade);
 
 #endif
