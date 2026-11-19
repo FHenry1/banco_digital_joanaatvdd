@@ -6,9 +6,12 @@
 int main() {
 
     Cliente *clientes = NULL;
+
     int quantidade = 0;
     int opcao;
     int bancoAberto = 0;
+
+    char sair = 'n';
 
     do {
 
@@ -33,26 +36,27 @@ int main() {
                     printf("\nQuantos clientes deseja cadastrar? ");
                     scanf("%d", &quantidade);
 
-                    if (quantidade > 0) {
+                    if (quantidade <= 0) {
 
-                        clientes = malloc(quantidade * sizeof(Cliente));
-
-                        if (clientes != NULL) {
-
-                            cadastrarClientes(clientes, quantidade);
-                            bancoAberto = 1;
-
-                            printf("\nBanco aberto com sucesso!\n");
-
-                        } else {
-
-                            printf("\nErro ao alocar memoria!\n");
-                            quantidade = 0;
-                        }
+                        printf("\nQuantidade de clientes invalida!\n");
 
                     } else {
 
-                        printf("\nQuantidade invalida!\n");
+                        clientes = malloc(quantidade * sizeof(Cliente));
+
+                        if (clientes == NULL) {
+
+                            printf("\nErro ao alocar memoria!\n");
+                            quantidade = 0;
+
+                        } else {
+
+                            cadastrarClientes(clientes, quantidade);
+
+                            bancoAberto = 1;
+
+                            printf("\nBanco aberto com sucesso!\n");
+                        }
                     }
                 }
 
@@ -73,20 +77,27 @@ int main() {
 
             case 3:
 
-                printf("\nEncerrando o banco...\n");
+                printf("\nDeseja realmente sair? (s/n): ");
+                scanf(" %c", &sair);
+
+                if (sair == 'n' || sair == 'N') {
+                    opcao = 0;
+                }
+
                 break;
 
             default:
 
-                printf("\nOpcao invalida!\n");
+                printf("\nOpcao invalida! Tente novamente.\n");
+
                 break;
         }
 
-    } while (opcao != 3);
+    } while (opcao != 3 || (sair != 's' && sair != 'S'));
 
     free(clientes);
 
-    printf("\nSistema encerrado!\n");
+    printf("\nSistema encerrado. Ate logo!\n");
 
     return 0;
 }
