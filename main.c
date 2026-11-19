@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include "meu_banco.h"
 
 int main() {
@@ -8,7 +9,6 @@ int main() {
     Cliente *clientes = NULL;
 
     int quantidadeClientes = 0;
-    int proximoNumeroConta = 1000;
 
     int bancoAberto = 0;
     int sair = 0;
@@ -18,10 +18,12 @@ int main() {
 
     Cliente *clienteEncontrado;
     Conta *contaEncontrada;
-    
+
+    srand(time(NULL));
+
     do {
 
-        printf("\n== BANCO DIGITAL ==\n");
+        printf("\n========== BANCO DIGITAL ==========\n");
         printf("1 - Abrir banco\n");
         printf("2 - Consultar historico\n");
         printf("3 - Efetuar sorteio\n");
@@ -37,11 +39,33 @@ int main() {
 
                 if (bancoAberto == 0) {
 
-                    bancoAberto = abrirBanco(
-                        &clientes,
-                        &quantidadeClientes,
-                        &proximoNumeroConta
-                    );
+                    printf("\nInforme a quantidade de clientes: ");
+                    scanf("%d", &quantidadeClientes);
+
+                    if (quantidadeClientes <= 0) {
+
+                        printf("\nQuantidade de clientes invalida!\n");
+                        quantidadeClientes = 0;
+
+                    } else {
+
+                        clientes = malloc(quantidadeClientes * sizeof(Cliente));
+
+                        if (clientes == NULL) {
+
+                            printf("\nErro ao alocar memoria!\n");
+                            quantidadeClientes = 0;
+
+                        } else {
+
+                            cadastrarClientes(clientes, quantidadeClientes);
+
+                            bancoAberto = 1;
+
+                            printf("\nBanco aberto com sucesso!\n");
+
+                        }
+                    }
 
                 } else {
 
@@ -55,7 +79,7 @@ int main() {
 
                 if (bancoAberto == 1) {
 
-                    consultarHistorico(clientes, quantidadeClientes);
+                    exibirRelatorios(clientes, quantidadeClientes);
 
                 } else {
 
@@ -104,8 +128,12 @@ int main() {
 
                             printf("\n========== MENU DO CLIENTE ==========\n");
                             printf("Cliente: %s\n", clienteEncontrado->nome);
-                            printf("Conta: %s\n", contaEncontrada->numero);
-                            printf("Saldo: R$ %.2f\n", contaEncontrada->saldo);
+                            printf("Conta: %s\n", contaEncontrada->numeroConta);
+
+                            printf("Saldo: R$ %s%ld,%02ld\n",
+                                contaEncontrada->saldo < 0 ? "-" : "",
+                                labs(contaEncontrada->saldo / 100),
+                                labs(contaEncontrada->saldo % 100));
 
                             printf("\n1 - Depositar\n");
                             printf("2 - Sacar\n");
@@ -120,17 +148,29 @@ int main() {
 
                             switch (opcaoCliente) {
 
-                                case '1':
+                                case '1': {
 
-                                    depositar(contaEncontrada);
+                                    long valor;
+
+                                    printf("\nDigite o valor do deposito em centavos: ");
+                                    scanf("%ld", &valor);
+
+                                    depositar(contaEncontrada, valor);
 
                                     break;
+                                }
 
-                                case '2':
+                                case '2': {
 
-                                    sacar(contaEncontrada);
+                                    long valor;
+
+                                    printf("\nDigite o valor do saque em centavos: ");
+                                    scanf("%ld", &valor);
+
+                                    sacar(contaEncontrada, valor);
 
                                     break;
+                                }
 
                                 case '3':
 
@@ -140,13 +180,13 @@ int main() {
 
                                 case '4':
 
-                                    adquirirTitulo(clienteEncontrado);
+                                    comprarTitulo(clienteEncontrado);
 
                                     break;
 
                                 case '5':
 
-                                    consultarExtrato(contaEncontrada);
+                                    exibirExtrato(contaEncontrada);
 
                                     break;
 
@@ -194,15 +234,21 @@ int main() {
 
             default:
 
-                printf("\nOpcao invalida! Tente novamente.\n");
+                printf("\nOpcao invalida!\n");
 
-                break;
         }
 
     } while (sair == 0);
-    liberarBanco(clientes, quantidadeClientes);
 
-    printf("\nSistema encerrado. Ate logo!\n");
+    if (clientes != NULL) {
+
+        salvarDados(clientes, quantidadeClientes);
+
+        free(clientes);
+
+    }
+
+    printf("\nBanco encerrado. Ate logo!\n");
 
     return 0;
 }
