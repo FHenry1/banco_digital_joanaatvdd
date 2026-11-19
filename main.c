@@ -7,82 +7,188 @@ int main() {
 
     Cliente *clientes = NULL;
 
-    int quantidade = 0;
-    int opcao;
+    int quantidadeClientes = 0;
+    int proximoNumeroConta = 1000;
+
     int bancoAberto = 0;
+    int sair = 0;
 
-    char sair = 'n';
+    char opcao;
+    char numeroConta[TAM_NUMERO_CONTA];
 
+    Cliente *clienteEncontrado;
+    Conta *contaEncontrada;
+    
     do {
 
-        printf("\n========== BANCO DIGITAL ==========\n");
+        printf("\n== BANCO DIGITAL ==\n");
         printf("1 - Abrir banco\n");
-        printf("2 - Historico do banco\n");
-        printf("3 - Sair\n");
+        printf("2 - Consultar historico\n");
+        printf("3 - Efetuar sorteio\n");
+        printf("4 - Acessar conta\n");
+        printf("s - Sair\n");
         printf("Escolha uma opcao: ");
 
-        scanf("%d", &opcao);
+        scanf(" %c", &opcao);
 
         switch (opcao) {
 
-            case 1:
+            case '1':
 
-                if (bancoAberto == 1) {
+                if (bancoAberto == 0) {
+
+                    bancoAberto = abrirBanco(
+                        &clientes,
+                        &quantidadeClientes,
+                        &proximoNumeroConta
+                    );
+
+                } else {
 
                     printf("\nO banco ja esta aberto!\n");
 
-                } else {
-
-                    printf("\nQuantos clientes deseja cadastrar? ");
-                    scanf("%d", &quantidade);
-
-                    if (quantidade <= 0) {
-
-                        printf("\nQuantidade de clientes invalida!\n");
-
-                    } else {
-
-                        clientes = malloc(quantidade * sizeof(Cliente));
-
-                        if (clientes == NULL) {
-
-                            printf("\nErro ao alocar memoria!\n");
-                            quantidade = 0;
-
-                        } else {
-
-                            cadastrarClientes(clientes, quantidade);
-
-                            bancoAberto = 1;
-
-                            printf("\nBanco aberto com sucesso!\n");
-                        }
-                    }
                 }
 
                 break;
 
-            case 2:
+            case '2':
 
                 if (bancoAberto == 1) {
 
-                    exibirRelatorios(clientes, quantidade);
+                    consultarHistorico(clientes, quantidadeClientes);
 
                 } else {
 
-                    printf("\nO banco precisa ser aberto primeiro!\n");
+                    printf("\nAbra o banco primeiro!\n");
+
                 }
 
                 break;
 
-            case 3:
+            case '3':
 
-                printf("\nDeseja realmente sair? (s/n): ");
-                scanf(" %c", &sair);
+                if (bancoAberto == 1) {
 
-                if (sair == 'n' || sair == 'N') {
-                    opcao = 0;
+                    realizarSorteio(clientes, quantidadeClientes);
+
+                } else {
+
+                    printf("\nAbra o banco primeiro!\n");
+
                 }
+
+                break;
+
+            case '4':
+
+                if (bancoAberto == 1) {
+
+                    printf("\n========== ACESSO A CONTA ==========\n");
+                    printf("Informe o numero da conta (ex: 1000-01): ");
+
+                    scanf(" %7s", numeroConta);
+
+                    if (buscarConta(
+                        clientes,
+                        quantidadeClientes,
+                        numeroConta,
+                        &clienteEncontrado,
+                        &contaEncontrada
+                    )) {
+
+                        alertarSaldoNegativo(clienteEncontrado);
+
+                        char opcaoCliente;
+
+                        do {
+
+                            printf("\n========== MENU DO CLIENTE ==========\n");
+                            printf("Cliente: %s\n", clienteEncontrado->nome);
+                            printf("Conta: %s\n", contaEncontrada->numero);
+                            printf("Saldo: R$ %.2f\n", contaEncontrada->saldo);
+
+                            printf("\n1 - Depositar\n");
+                            printf("2 - Sacar\n");
+                            printf("3 - Solicitar emprestimo\n");
+                            printf("4 - Adquirir titulos de capitalizacao\n");
+                            printf("5 - Solicitar extrato\n");
+                            printf("0 - Voltar ao menu principal\n");
+                            printf("s - Sair do programa\n");
+                            printf("Escolha uma opcao: ");
+
+                            scanf(" %c", &opcaoCliente);
+
+                            switch (opcaoCliente) {
+
+                                case '1':
+
+                                    depositar(contaEncontrada);
+
+                                    break;
+
+                                case '2':
+
+                                    sacar(contaEncontrada);
+
+                                    break;
+
+                                case '3':
+
+                                    solicitarEmprestimo(clienteEncontrado);
+
+                                    break;
+
+                                case '4':
+
+                                    adquirirTitulo(clienteEncontrado);
+
+                                    break;
+
+                                case '5':
+
+                                    consultarExtrato(contaEncontrada);
+
+                                    break;
+
+                                case '0':
+
+                                    printf("\nRetornando ao menu principal...\n");
+
+                                    break;
+
+                                case 's':
+                                case 'S':
+
+                                    sair = 1;
+
+                                    break;
+
+                                default:
+
+                                    printf("\nOpcao invalida!\n");
+
+                            }
+
+                        } while (opcaoCliente != '0' && sair == 0);
+
+                    } else {
+
+                        printf("\nConta nao encontrada!\n");
+
+                    }
+
+                } else {
+
+                    printf("\nAbra o banco primeiro!\n");
+
+                }
+
+                break;
+
+            case 's':
+            case 'S':
+
+                sair = 1;
 
                 break;
 
@@ -93,9 +199,8 @@ int main() {
                 break;
         }
 
-    } while (opcao != 3 || (sair != 's' && sair != 'S'));
-
-    free(clientes);
+    } while (sair == 0);
+    liberarBanco(clientes, quantidadeClientes);
 
     printf("\nSistema encerrado. Ate logo!\n");
 
